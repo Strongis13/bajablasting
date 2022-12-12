@@ -4,13 +4,15 @@
 We have built a Network Management Chatbot, which has the following configurations:
 
 The bot is set up to read our list of routers `routers.txt` and prompt the user to select one of the routers from the list when running a given command. For example, if the user types the `show int` command without specifying a device, the bot will respond with:
-`The selected option was invalid.
+```
+The selected option was invalid.
 
 Available selections are:
 [1] - x.x.x.x
 [2] - x.x.x.x
 [x] - x.x.x.x
-[all] - All devices in list`
+[all] - All devices in list
+```
 Where the list will expand to include all items in the list of `routers.txt`.
 
 Using paramiko, we are able to apply an arbitrary list of commands to an individual or list of routers. The commands are entered in `cmd.txt`, with one command per line, then when the `applyconf` command is ran with an accompanying selector option (1, 2, all, etc) the commands specified in `cmd.txt` will be ran on the selected device(s).
