@@ -1,6 +1,6 @@
 # bajablasting
 
-                                                                  Welcome to our Project!
+                                                        Welcome to our Project!
 We have built a Network Management Chatbot, which has the following configurations:
 
 The bot is set up where we have our list of routers (routers.txt) and whenever the user types a command for the bot it asks which router from the list, they would like to run the command for (with an option to select all of them). The paramiko skill will be applying ospf configs, restconf will be retrieving show ip route
