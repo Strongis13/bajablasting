@@ -2,26 +2,19 @@
 from webexteamsbot import TeamsBot
 from webexteamsbot.models import Response
 ### Utilities Libraries
-import routers
-import useless_skills as useless
 import useful_skills as useful
-
-# Router Info 
-device_address = routers.router['host']
-device_username = routers.router['username']
-device_password = routers.router['password']
+import os
 
 # RESTCONF Setup
 port = '443'
-url_base = "https://{h}/restconf".format(h=device_address)
 headers = {'Content-Type': 'application/yang-data+json',
            'Accept': 'application/yang-data+json'}
 
 # Bot Details
 bot_email = 'bajablast@webex.bot'
 teams_token = 'Y2QyNmNkZjEtMDgzYy00YWU1LWI5MjctYTQ5NDQ0NmU5YzM3MTdlN2E0MGMtOTgz_P0A1_da087be3-a5c4-42e0-91c2-0fc6d3da3fdb'
-bot_url = "https://9608-71-95-80-164.ngrok.io"
-bot_app_name = 'CNIT-381 Network Auto Chat Bot'
+bot_url = "https://c4f0-71-95-80-164.ngrok.io"
+bot_app_name = 'Baja Blasting Network Auto Chat Bot'
 
 # Create a Bot Object
 #   Note: debug mode prints out more details about processing to terminal
@@ -50,47 +43,57 @@ def greeting(incoming_msg):
     response.markdown += "\n\nSee what I can do by asking for **/help**."
     return response
 
-def arp_list(incoming_msg):
-    """Return the arp table from device
-    """
+def listen_int_ips(incoming_msg):
     response = Response()
-    arps = useful.get_arp(url_base, headers,device_username,device_password)
+    try:
+        routers = useful.m.get_list_from_file('routers.txt')
+    except:
+        routers = []
+    #select target routers
+    target = bot.extract_message("show int", incoming_msg.text).strip()
 
-    if len(arps) == 0:
-        response.markdown = "I don't have any entries in my ARP table."
+    if target == 'all':
+        try:
+            #loop through all
+            for i in range(len(routers)):
+                #
+                return get_int_ips(incoming_msg,routers[i])
+        
+        except:
+            response.markdown = 'An error has occured on at least one device! Check the connection and try again.'
     else:
-        response.markdown = "Here is the ARP information I know. \n\n"
-        for arp in arps:
-            response.markdown += "* A device with IP {} and MAC {} are available on interface {}.\n".format(
-               arp['address'], arp["hardware"], arp["interface"]
-            )
+        try:
+            target = int(target)
+            if (target > 0) and (target <= len(routers)):
+                #run with specific router
+                try:
+                    return get_int_ips(incoming_msg,routers[target-1])
+                except:
+                    response.markdown = 'An error has occured! Check the connection and try again.'
+    
+            else:
+                #error, not valid input
+                return list_available_routers(routers)
+
+        except:
+            #non-number input
+            return list_available_routers(routers)
 
     return response
 
-def sys_info(incoming_msg):
-    """Return the system info
-    """
-    response = Response()
-    info = useful.get_sys_info(url_base, headers,device_username,device_password)
+def get_int_ips(incoming_msg,router):
+    device_name = router.get("ip")
+    device_username = router.get("username")
+    device_password = router.get("password")
+    url_base = "https://{h}/restconf".format(h=device_name)
 
-    if len(info) == 0:
-        response.markdown = "I don't have any information of this device"
-    else:
-        response.markdown = "Here is the device system information I know. \n\n"
-        response.markdown += "Device type: {}.\nSerial-number: {}.\nCPU Type:{}\n\nSoftware Version:{}\n" .format(
-            info['device-inventory'][0]['hw-description'], info['device-inventory'][0]["serial-number"], 
-            info['device-inventory'][4]["hw-description"],info['device-system-data']['software-version'])
-
-    return response
-
-def get_int_ips(incoming_msg):
     response = Response()
     intf_list = useful.get_configured_interfaces(url_base, headers,device_username,device_password)
 
     if len(intf_list) == 0:
         response.markdown = "I don't have any information of this device"
     else:
-        response.markdown = "Here is the list of interfaces with IPs I know. \n\n"
+        response.markdown = "Here is the list of interfaces with IPs I know for device **{name}**: \n\n".format(name=device_name)
     for intf in intf_list:
         response.markdown +="*Name:{}\n" .format(intf["name"])
         try:
@@ -100,21 +103,75 @@ def get_int_ips(incoming_msg):
             response.markdown +="IP Address: UNCONFIGURED\n"
     return response
 
+def listen_conf(incoming_msg):
+    response = Response()
+    try:
+        routers = useful.m.get_list_from_file('routers.txt')
+    except:
+        routers = []
+    #select target routers
+    target = bot.extract_message("applyconf", incoming_msg.text).strip()
+    
+    if target == 'all':
+        try:
+            #loop through all
+            for i in range(len(routers)):
+                useful.apply_custom_config(routers[i])
+        
+            response.markdown = 'Configuration has been applied to all devices.'
+        except:
+            response.markdown = 'An error has occured on at least one device! Check the connection and try again.'
+    else:
+        try:
+            target = int(target)
+            if (target > 0) and (target <= len(routers)):
+                #run with specific router
+                try:
+                    useful.apply_custom_config(routers[target-1])
+                    response.markdown = 'Configuration has been applied to the device.'
+                except:
+                    response.markdown = 'An error has occured! Check the connection and try again.'
+    
+            else:
+                #error, not valid input
+                return list_available_routers(routers)
+
+        except:
+            #non-number input
+            return list_available_routers(routers)
+
+
+    #convert .txt format to restconf format
+    return response
+
+def list_available_routers(routers):
+    reply = Response()
+    reply.markdown = "The selected option was invalid."
+    reply.markdown += "\n\nAvailable selections are:\n"
+    if len(routers) >= 1:
+        for i in range(len(routers)):
+            reply.markdown += "**[{i}]** - {hostname}\n".format(i=i+1,hostname=routers[i].get("ip"))
+        reply.markdown += "**[all]** - All devices in list"
+    else:
+        reply.markdown += "*No devices found! Verify data in routers.txt file!*"
+
+    return reply
+
+def save_config(incoming_msg):
+    response = Response()
+    os.system("ansible-playbook backup_cisco_router_playbook.yaml -i hosts")
+    response.markdown = "Router's running-config has been saved to the backups directory on host machine!"
+
+    return response
+
+
 # Set the bot greeting.
 bot.set_greeting(greeting)
 
 # Add Bot's Commmands
-bot.add_command(
-    "arp list", "See what ARP entries I have in my table.", arp_list)
-bot.add_command(
-    "system info", "Checkout the device system info.", sys_info)
-bot.add_command(
-    "show interfaces", "List all interfaces and their IP addresses", get_int_ips)
-bot.add_command("attachmentActions", "*", useless.handle_cards)
-bot.add_command("showcard", "show an adaptive card", useless.show_card)
-bot.add_command("dosomething", "help for do something", useless.do_something)
-bot.add_command("time", "Look up the current time", useless.current_time)
-#bot.add_command("","",)
+bot.add_command("show int", "List all interfaces and their IP addresses", listen_int_ips)
+bot.add_command("applyconf", "Apply arbitrary configuration from file", listen_conf)
+bot.add_command("backup", "Backs up the running config of a device and saves it to a file", save_config)
 # Every bot includes a default "/echo" command.  You can remove it, or any
 bot.remove_command("/echo")
 

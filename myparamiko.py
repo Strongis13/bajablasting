@@ -8,11 +8,11 @@ def get_list_from_file(filename):
         f.close()
         return data
 
-def connect(server_ip, server_port, user, passwd):
+def connect(ip, port, username, password):
     ssh_client = paramiko.SSHClient()
     ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    print(f'Connecting to {server_ip}')
-    ssh_client.connect(hostname=server_ip, port=server_port, username=user, password=passwd,
+    print(f'Connecting to {ip}')
+    ssh_client.connect(hostname=ip, port=port, username=username, password=password,
                        look_for_keys=False, allow_agent=False)
     return ssh_client
 
@@ -40,17 +40,17 @@ def close(ssh_client):
         print('Closing connection')
         ssh_client.close()
 
-if __name__ == '__main__':
-    router1 = {'server_ip': '192.168.122.10', 'server_port': '22', 'user':'cisco', 'passwd':'cisco'}
-    client = connect(**router1)
-    shell = get_shell(client)
-
-    send_command(shell, 'enable')
-    send_command(shell, 'cisco') # this is the enable password
-    send_command(shell, 'term len 0')
-    send_command(shell, 'sh version')
-    send_command(shell, 'sh ip int brief')
-    get_list_from_file('routers.txt')
+#if __name__ == '__main__':
+#    router1 = {'server_ip': '192.168.122.10', 'server_port': '22', 'user':'cisco', 'passwd':'cisco'}
+#    client = connect(**router1)
+#    shell = get_shell(client)
+#
+#    send_command(shell, 'enable')
+#    send_command(shell, 'cisco') # this is the enable password
+#    send_command(shell, 'term len 0')
+#    send_command(shell, 'sh version')
+#    send_command(shell, 'sh ip int brief')
+#    get_list_from_file('routers.txt')
 
 
 

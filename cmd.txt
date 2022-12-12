@@ -1,0 +1,8 @@
+enable
+conf t
+router ospf 1
+network 0.0.0.0 0.0.0.0 area 1
+exit
+int lo1
+ip add 10.0.0.1 255.255.255.0
+end

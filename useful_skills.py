@@ -4,33 +4,7 @@ import myparamiko as m
 ### For RESTCONF
 import requests
 import json
-
-def get_arp(url_base,headers,username,password):
-    url = url_base + "/data/Cisco-IOS-XE-arp-oper:arp-data/"
-
-    # this statement performs a GET on the specified url
-    response = requests.get(url,
-                            auth=(username, password),
-                            headers=headers,
-                            verify=False
-                            )
-
-    # return the json as text
-    return response.json()['Cisco-IOS-XE-arp-oper:arp-data']['arp-vrf'][0]['arp-oper']
-
-
-def get_sys_info(url_base,headers,username,password):
-    url = url_base + "/data/Cisco-IOS-XE-device-hardware-oper:device-hardware-data/"
-
-    # this statement performs a GET on the specified url
-    response = requests.get(url,
-                            auth=(username, password),
-                            headers=headers,
-                            verify=False
-                            )
-
-    # return the json as text
-    return response.json()["Cisco-IOS-XE-device-hardware-oper:device-hardware-data"]["device-hardware"]
+import routers
 
 # Function to retrieve the list of interfaces on a device
 def get_configured_interfaces(url_base,headers,username,password):
@@ -43,6 +17,21 @@ def get_configured_interfaces(url_base,headers,username,password):
                             verify=False
                             )
     return response.json()["ietf-interfaces:interfaces"]["interface"]
+
+def apply_custom_config(router):
+    #routers = m.get_list_from_file('routers.txt')
+
+    #for router in routers:
+    ssh_client = m.connect(**router)
+    shell = m.get_shell(ssh_client)
+
+    with open("cmd.txt") as file:
+        for command in file:
+            #print (command)
+            m.send_command(shell, command.rstrip())
+            m.time.sleep(0.1)
+
+    m.close(ssh_client)
 
 
 if __name__ == "__main__":
