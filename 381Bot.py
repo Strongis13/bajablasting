@@ -3,6 +3,7 @@ from webexteamsbot import TeamsBot
 from webexteamsbot.models import Response
 ### Utilities Libraries
 import useful_skills as useful
+import openaiapi as openapi
 import os
 
 # RESTCONF Setup
@@ -13,7 +14,7 @@ headers = {'Content-Type': 'application/yang-data+json',
 # Bot Details
 bot_email = 'bajablast@webex.bot'
 teams_token = 'Y2QyNmNkZjEtMDgzYy00YWU1LWI5MjctYTQ5NDQ0NmU5YzM3MTdlN2E0MGMtOTgz_P0A1_da087be3-a5c4-42e0-91c2-0fc6d3da3fdb'
-bot_url = "https://c4f0-71-95-80-164.ngrok.io"
+bot_url = "https://6dbf-144-13-254-57.ngrok.io"
 bot_app_name = 'Baja Blasting Network Auto Chat Bot'
 
 # Create a Bot Object
@@ -57,7 +58,7 @@ def listen_int_ips(incoming_msg):
             #loop through all
             for i in range(len(routers)):
                 #
-                return get_int_ips(incoming_msg,routers[i])
+                get_int_ips(incoming_msg,routers[i])
         
         except:
             response.markdown = 'An error has occured on at least one device! Check the connection and try again.'
@@ -164,6 +165,39 @@ def save_config(incoming_msg):
 
     return response
 
+def gptconf(incoming_msg):
+    response = Response()
+    prompt = bot.extract_message("ciscogpt", incoming_msg.text).strip()
+    #new ai instance
+    ai = openapi.OpenAI()
+    ai.context_prompt = "Generate the following config in cisco ios code, without any comments or details, and do not add any notes to your response. It should only contain code."
+    #make request
+    reply = ai.analyze(prompt)
+    
+    #save reply to file
+    file = open(os.getcwd() + "/cmd.txt", "w+")
+    file.write(reply.choices[0].text)
+    file.close()
+
+    response.markdown = "Response from OpenAI has been saved to cmd.txt!\nOpenAI Response:\n```"
+    response.markdown += reply.choices[0].text
+    response.markdown += "\n```\nTo apply this config, use the \"applyconf\" command."
+
+    return response
+
+def gpt(incoming_msg):
+    response = Response()
+    prompt = bot.extract_message("gpt", incoming_msg.text).strip()
+    #new ai instance
+    ai = openapi.OpenAI()
+    #make request
+    reply = ai.analyze(prompt)
+
+    response.markdown = "ChatGPT Response:\n```"
+    response.markdown += reply.choices[0].text
+    response.markdown += "\n```"
+
+    return response
 
 # Set the bot greeting.
 bot.set_greeting(greeting)
@@ -172,6 +206,8 @@ bot.set_greeting(greeting)
 bot.add_command("show int", "List all interfaces and their IP addresses", listen_int_ips)
 bot.add_command("applyconf", "Apply arbitrary configuration from file", listen_conf)
 bot.add_command("backup", "Backs up the running config of a device and saves it to a file", save_config)
+bot.add_command("ciscogpt", "Request Cisco configuration from OpenAI's GPT-3 model", gptconf)
+bot.add_command("gpt", "General prompt from OpenAI's GPT-3 model", gpt)
 # Every bot includes a default "/echo" command.  You can remove it, or any
 bot.remove_command("/echo")
 

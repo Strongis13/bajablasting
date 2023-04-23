@@ -1,8 +1,15 @@
-enable
-conf t
-router ospf 1
-network 0.0.0.0 0.0.0.0 area 1
-exit
-int lo1
-ip add 10.0.0.1 255.255.255.0
-end
+
+
+interface range 0-24
+shutdown
+no ip domain-lookup
+service password-encryption
+ip ssh version 2
+hostname <name>
+spanning-tree portfast bpduguard default
+vlan 5
+name Admin
+vlan 10
+name Unmanaged
+vlan 15
+name Guest

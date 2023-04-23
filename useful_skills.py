@@ -4,7 +4,6 @@ import myparamiko as m
 ### For RESTCONF
 import requests
 import json
-import routers
 
 # Function to retrieve the list of interfaces on a device
 def get_configured_interfaces(url_base,headers,username,password):
