@@ -13,8 +13,9 @@ headers = {'Content-Type': 'application/yang-data+json',
 
 # Bot Details
 bot_email = 'bajablast@webex.bot'
-teams_token = 'Y2QyNmNkZjEtMDgzYy00YWU1LWI5MjctYTQ5NDQ0NmU5YzM3MTdlN2E0MGMtOTgz_P0A1_da087be3-a5c4-42e0-91c2-0fc6d3da3fdb'
-bot_url = "https://6dbf-144-13-254-57.ngrok.io"
+teamskey = open(os.path.join(os.path.dirname(__file__), "teamskey.txt"), "r")
+teams_token = teamskey.read()
+bot_url = "https://7cd3-144-13-254-66.ngrok.io"
 bot_app_name = 'Baja Blasting Network Auto Chat Bot'
 
 # Create a Bot Object

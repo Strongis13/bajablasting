@@ -2,7 +2,7 @@ import openai
 import os
 
 class OpenAI:
-  context_prompt = "Respond with a possible fix or cause for the following errors"
+  #context_prompt = "Respond with a possible fix or cause for the following errors"
   max_generation = 500
   model_lookup = {0: "text-davinci-003", 1: "gpt-3.5-turbo", 2: "gpt-4"}
   model = 0
