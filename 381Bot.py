@@ -15,7 +15,7 @@ headers = {'Content-Type': 'application/yang-data+json',
 bot_email = 'bajablast@webex.bot'
 teamskey = open(os.path.join(os.path.dirname(__file__), "teamskey.txt"), "r")
 teams_token = teamskey.read()
-bot_url = "https://7cd3-144-13-254-66.ngrok.io"
+bot_url = "https://c5f9-144-13-254-51.ngrok.io"
 bot_app_name = 'Baja Blasting Network Auto Chat Bot'
 
 # Create a Bot Object
@@ -188,15 +188,44 @@ def gptconf(incoming_msg):
 
 def gpt(incoming_msg):
     response = Response()
-    prompt = bot.extract_message("gpt", incoming_msg.text).strip()
+    prompt = bot.extract_message("newgpt", incoming_msg.text).strip()
+    print(prompt)
+    file = open(os.getcwd() + "/gptoutput.txt", "w+")
+    file.write(prompt)
+
     #new ai instance
     ai = openapi.OpenAI()
+    ai.context_prompt = ""
+    #make request
+    reply = ai.analyze(prompt)
+
+    response.markdown = "ChatGPT Response:\n"
+    response.markdown += reply.choices[0].text
+    response.markdown += "\n```"
+
+    file.write(reply.choices[0].text)
+    file.close()
+
+    return response
+
+def replygpt(incoming_msg):
+    response = Response()
+    prompt = bot.extract_message("replygpt", incoming_msg.text).strip()
+
+    file = open(os.getcwd() + "/gptoutput.txt", "a+")
+
+    #new ai instance
+    ai = openapi.OpenAI()
+    ai.context_prompt = file.read()
+    file.write(prompt)
     #make request
     reply = ai.analyze(prompt)
 
     response.markdown = "ChatGPT Response:\n```"
     response.markdown += reply.choices[0].text
+
     response.markdown += "\n```"
+    file.write(reply.choices[0].text)
 
     return response
 
@@ -208,7 +237,8 @@ bot.add_command("show int", "List all interfaces and their IP addresses", listen
 bot.add_command("applyconf", "Apply arbitrary configuration from file", listen_conf)
 bot.add_command("backup", "Backs up the running config of a device and saves it to a file", save_config)
 bot.add_command("ciscogpt", "Request Cisco configuration from OpenAI's GPT-3 model", gptconf)
-bot.add_command("gpt", "General prompt from OpenAI's GPT-3 model", gpt)
+bot.add_command("newgpt", "Start new conversation with OpenAI's GPT model", gpt)
+bot.add_command("replygpt", "Continue existing conversation with OpenAI's GPT model", replygpt)
 # Every bot includes a default "/echo" command.  You can remove it, or any
 bot.remove_command("/echo")
 

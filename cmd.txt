@@ -1,12 +1,16 @@
 
 
-interface range 0-24
+conf t
+int range 0-24
+no shutdown
+int range 25-48
 shutdown
 no ip domain-lookup
 service password-encryption
 ip ssh version 2
 hostname <name>
-spanning-tree portfast bpduguard default
+spanning-tree portfast default
+spanning-tree bpduguard default
 vlan 5
 name Admin
 vlan 10
