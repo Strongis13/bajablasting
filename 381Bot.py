@@ -191,12 +191,7 @@ def gptconf(incoming_msg):
 def gpt(incoming_msg):
     response = Response()
     prompt = bot.extract_message("newgpt", incoming_msg.text).strip()
-    #file = open(os.getcwd() + "/gptoutput.txt", "w+")
-    #file.write(prompt)
-
-
-    #new ai instance
-    #ai.context_prompt = ""
+    
     #make request
     reply = ai.analyze(prompt)
 
@@ -204,30 +199,20 @@ def gpt(incoming_msg):
     response.markdown += reply.choices[0].text
     response.markdown += "\n"
 
-    #file.write(reply.choices[0].text)
-    #file.close()
-
     return response
 
 def replygpt(incoming_msg):
     response = Response()
     prompt = bot.extract_message("replygpt", incoming_msg.text).strip()
 
-    #new ai instance
-    #ai = openapi.OpenAI()
-    #ai.context_prompt = ""
-    #file.write(prompt)
     #make request
-    ai.context.append({"role":"system","content":"You are a prime number generator"})
     print(ai.context)
     reply = ai.chatGenerate(prompt)
-
 
     response.markdown = "ChatGPT Response:\n"
     response.markdown += reply
 
     response.markdown += "\n"
-    #file.write(reply.choices[0].text)
 
     return response
 

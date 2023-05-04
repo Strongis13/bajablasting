@@ -23,7 +23,6 @@ class OpenAI:
         max_tokens= self.max_generation #max tokens to generate
       )
       self.context.append({"role":"assistant", "content": output.choices[0].text})
-      print(self.context)
     except:
       output = "Error in settings"
     return output
