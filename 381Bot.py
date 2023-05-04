@@ -31,6 +31,8 @@ bot = TeamsBot(
         {"resource": "attachmentActions", "event": "created"},],
 )
 
+ai = openapi.OpenAI()
+
 # Create a function to respond to messages that lack any specific command
 # The greeting will be friendly and suggest how folks can get started.
 def greeting(incoming_msg):
@@ -170,10 +172,10 @@ def gptconf(incoming_msg):
     response = Response()
     prompt = bot.extract_message("ciscogpt", incoming_msg.text).strip()
     #new ai instance
-    ai = openapi.OpenAI()
-    ai.context_prompt = "Generate the following config in cisco ios code, without any comments or details, and do not add any notes to your response. It should only contain code."
+    ai2 = openapi.OpenAI()
+    ai2.context_prompt = "Generate the following config in cisco ios code, without any comments or details, and do not add any notes to your response. It should only contain code."
     #make request
-    reply = ai.analyze(prompt)
+    reply = ai2.analyze(prompt)
     
     #save reply to file
     file = open(os.getcwd() + "/cmd.txt", "w+")
@@ -189,22 +191,21 @@ def gptconf(incoming_msg):
 def gpt(incoming_msg):
     response = Response()
     prompt = bot.extract_message("newgpt", incoming_msg.text).strip()
-    print(prompt)
-    file = open(os.getcwd() + "/gptoutput.txt", "w+")
-    file.write(prompt)
+    #file = open(os.getcwd() + "/gptoutput.txt", "w+")
+    #file.write(prompt)
+
 
     #new ai instance
-    ai = openapi.OpenAI()
-    ai.context_prompt = ""
+    #ai.context_prompt = ""
     #make request
     reply = ai.analyze(prompt)
 
     response.markdown = "ChatGPT Response:\n"
     response.markdown += reply.choices[0].text
-    response.markdown += "\n```"
+    response.markdown += "\n"
 
-    file.write(reply.choices[0].text)
-    file.close()
+    #file.write(reply.choices[0].text)
+    #file.close()
 
     return response
 
@@ -212,20 +213,21 @@ def replygpt(incoming_msg):
     response = Response()
     prompt = bot.extract_message("replygpt", incoming_msg.text).strip()
 
-    file = open(os.getcwd() + "/gptoutput.txt", "a+")
-
     #new ai instance
-    ai = openapi.OpenAI()
-    ai.context_prompt = file.read()
-    file.write(prompt)
+    #ai = openapi.OpenAI()
+    #ai.context_prompt = ""
+    #file.write(prompt)
     #make request
-    reply = ai.analyze(prompt)
+    ai.context.append({"role":"system","content":"You are a prime number generator"})
+    print(ai.context)
+    reply = ai.chatGenerate(prompt)
 
-    response.markdown = "ChatGPT Response:\n```"
-    response.markdown += reply.choices[0].text
 
-    response.markdown += "\n```"
-    file.write(reply.choices[0].text)
+    response.markdown = "ChatGPT Response:\n"
+    response.markdown += reply
+
+    response.markdown += "\n"
+    #file.write(reply.choices[0].text)
 
     return response
 
@@ -237,8 +239,8 @@ bot.add_command("show int", "List all interfaces and their IP addresses", listen
 bot.add_command("applyconf", "Apply arbitrary configuration from file", listen_conf)
 bot.add_command("backup", "Backs up the running config of a device and saves it to a file", save_config)
 bot.add_command("ciscogpt", "Request Cisco configuration from OpenAI's GPT-3 model", gptconf)
-bot.add_command("newgpt", "Start new conversation with OpenAI's GPT model", gpt)
-bot.add_command("replygpt", "Continue existing conversation with OpenAI's GPT model", replygpt)
+bot.add_command("newgpt", "Start a new conversation with OpenAI's GPT model", gpt)
+bot.add_command("replygpt", "Continue an existing conversation with OpenAI's GPT model", replygpt)
 # Every bot includes a default "/echo" command.  You can remove it, or any
 bot.remove_command("/echo")
 

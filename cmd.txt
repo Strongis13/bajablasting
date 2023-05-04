@@ -1,19 +1,22 @@
+ 
 
-
+en
 conf t
 int range 0-24
-no shutdown
+no shut
 int range 25-48
-shutdown
+shut
 no ip domain-lookup
 service password-encryption
 ip ssh version 2
-hostname <name>
-spanning-tree portfast default
-spanning-tree bpduguard default
+hostname SWITCH
+spanning-tree bpduguard enable
+
 vlan 5
 name Admin
+
 vlan 10
 name Unmanaged
+
 vlan 15
 name Guest
